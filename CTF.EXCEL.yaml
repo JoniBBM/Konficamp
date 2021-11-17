@@ -44,23 +44,23 @@ script:
       });
 
       let selectedFlags: number[] = Array();
-        for (let currBonus = selectedFlags.length; currBonus < bonusCount; currBonus++) {
-          let maxIndex = -1;
-          let maxValue = 0;
-          for (let flag = 0; flag < 8; flag++) {
-            if (!selectedFlags.includes(flag)) {
-              if (flagRoundCounter[flag][minute - 1] > maxValue) {
-                maxIndex = flag;
-                maxValue = flagRoundCounter[flag][minute - 1];
-              }
+      for (let currBonus = selectedFlags.length; currBonus < bonusCount; currBonus++) {
+        let maxIndex = -1;
+        let maxValue = 0;
+        for (let flag = 0; flag < 8; flag++) {
+          if (!selectedFlags.some((selFlag) => selFlag == flag)) {
+            if (flagRoundCounter[minute - 1][flag] > maxValue) {
+              maxIndex = flag;
+              maxValue = flagRoundCounter[minute - 1][flag];
             }
           }
-          if (maxIndex != -1) {
-            selectedFlags.push(maxIndex);
-          }
         }
+        if (maxIndex != -1) {
+          selectedFlags.push(maxIndex);
+        }
+      }
 
-      if (minute > selectedFlags.length) {
+      if (minute > flagRoundCounter.length) {
         return 0;
       }
 
