@@ -1,5 +1,5 @@
 name: CTF
-description: Create a new snippet from a blank template.
+description: Used to calculate points for a real-life Capture-the-flag game.
 host: EXCEL
 api_set: {}
 script:
