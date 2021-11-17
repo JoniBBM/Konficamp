@@ -3,7 +3,7 @@ description: Create a new snippet from a blank template.
 host: EXCEL
 api_set: {}
 script:
-  content: >-
+  content: >
     /* global clearInterval, console, CustomFunctions, setInterval */
 
 
@@ -13,8 +13,8 @@ script:
      * @param flags cell
      */
     function countflags(flags: string): number {
-      const split = flags.split(",")
-      return split.filter(flag => flag.trim().length != 0).length
+      const split = flags.split(",");
+      return split.filter((flag) => flag.trim().length != 0).length;
     }
 
 
@@ -28,21 +28,81 @@ script:
     function getbonus(flagRange: string[][], bonusCount: number, minute:
     number): number {
       const flatRange = flagRange.reduce((accumulator, value) => accumulator.concat(value), []);
-      const roundsCounter = Array(flatRange.length)
+      const flagRoundCounter = Array(flatRange.length);
       flatRange.forEach((cell, i) => {
-        roundsCounter[i] = Array(8).fill(0)
-        cell.split(",").map(flag => flag.trim()).forEach(flag => {
-          if (i == 0) {
-            roundsCounter[i][parseInt(flag) - 1] = 1;
-          } else {
-            roundsCounter[i][parseInt(flag) - 1] = roundsCounter[i - 1][parseInt(flag) - 1] + 1;
-          }
-        });
-      })
+        flagRoundCounter[i] = Array(8).fill(0);
+        cell
+          .split(",")
+          .map((flag) => flag.trim())
+          .forEach((flag) => {
+            if (i == 0) {
+              flagRoundCounter[i][parseInt(flag) - 1] = 1;
+            } else {
+              flagRoundCounter[i][parseInt(flag) - 1] = flagRoundCounter[i - 1][parseInt(flag) - 1] + 1;
+            }
+          });
+      });
 
-      const remainingStreak = Array(8)
+      let selectedFlags: number[] = Array();
+        for (let currBonus = selectedFlags.length; currBonus < bonusCount; currBonus++) {
+          let maxIndex = -1;
+          let maxValue = 0;
+          for (let flag = 0; flag < 8; flag++) {
+            if (!selectedFlags.includes(flag)) {
+              if (flagRoundCounter[flag][minute - 1] > maxValue) {
+                maxIndex = flag;
+                maxValue = flagRoundCounter[flag][minute - 1];
+              }
+            }
+          }
+          if (maxIndex != -1) {
+            selectedFlags.push(maxIndex);
+          }
+        }
+
+      if (minute > selectedFlags.length) {
+        return 0;
+      }
+
+      let points = 0;
+      selectedFlags.forEach((flag) => {
+        points += flagRoundCounter[minute - 1][flag];
+      });
+
+      console.log("Round", minute, "Flags", JSON.stringify(selectedFlags));
+
+      return points;
+    }
+
+
+    /**
+     * Get the range bonus points
+     * @customfunction
+     * @param flagRange range over all flags
+     * @param bonusCount amount of possible bonuses
+     * @param minute current minute of the game
+     */
+    function getbonusold(flagRange: string[][], bonusCount: number, minute:
+    number): number {
+      const flatRange = flagRange.reduce((accumulator, value) => accumulator.concat(value), []);
+      const roundsCounter = Array(flatRange.length);
+      flatRange.forEach((cell, i) => {
+        roundsCounter[i] = Array(8).fill(0);
+        cell
+          .split(",")
+          .map((flag) => flag.trim())
+          .forEach((flag) => {
+            if (i == 0) {
+              roundsCounter[i][parseInt(flag) - 1] = 1;
+            } else {
+              roundsCounter[i][parseInt(flag) - 1] = roundsCounter[i - 1][parseInt(flag) - 1] + 1;
+            }
+          });
+      });
+
+      const remainingStreak = Array(8);
       for (let flag = 0; flag < 8; flag++) {
-        remainingStreak[flag] = Array(roundsCounter.length).fill(0)
+        remainingStreak[flag] = Array(roundsCounter.length).fill(0);
         let currValMax = 0;
         let currVal = 0;
         for (let round = flatRange.length - 1; round >= 0; round--) {
@@ -54,19 +114,19 @@ script:
           if (currVal < currValMax) {
             currVal++;
           }
-          remainingStreak[flag][round] = currVal
+          remainingStreak[flag][round] = currVal;
         }
       }
 
-      let selectedFlags = Array(roundsCounter.length)
+      let selectedFlags = Array(roundsCounter.length);
       for (let round = 0; round < roundsCounter.length; round++) {
-        selectedFlags[round] = Array()
+        selectedFlags[round] = Array();
         if (round > 0) {
-          selectedFlags[round - 1].forEach(flag => {
+          selectedFlags[round - 1].forEach((flag) => {
             if (remainingStreak[flag][round] > 0) {
-              selectedFlags[round].push(flag)
+              selectedFlags[round].push(flag);
             }
-          })
+          });
         }
         for (let currBonus = selectedFlags[round].length; currBonus < bonusCount; currBonus++) {
           let maxIndex = -1;
@@ -80,7 +140,7 @@ script:
             }
           }
           if (maxIndex != -1) {
-            selectedFlags[round].push(maxIndex)
+            selectedFlags[round].push(maxIndex);
           }
         }
       }
@@ -90,11 +150,11 @@ script:
       }
 
       let points = 0;
-      selectedFlags[minute - 1].forEach(flag => {
+      selectedFlags[minute - 1].forEach((flag) => {
         points += roundsCounter[minute - 1][flag];
-      })
+      });
 
-      console.log("Round", minute, "Flags", JSON.stringify(selectedFlags))
+      console.log("Round", minute, "Flags", JSON.stringify(selectedFlags));
 
       return points;
     }
