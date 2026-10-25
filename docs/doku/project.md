@@ -1,6 +1,6 @@
 ---
-id: jonibbm-konficamp
-name: Jonibbm Konficamp
+id: konficamp
+name: Konficamp
 summary: TODO Ein Satz, was diese App macht.
 tech: []
 # repo: https://github.com/org/repo
